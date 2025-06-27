@@ -29,6 +29,14 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
+    @property
+    def image_url(self):
+        try:
+            url = self.image.url
+        except:
+            url = ''
+        return url
+    
 class Order(models.Model):
     custumer = models.ForeignKey(Custumer, on_delete=models.SET_NULL, null=True, blank=True)
     date_ordered = models.DateTimeField(auto_now_add=True)
