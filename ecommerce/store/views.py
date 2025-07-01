@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import *
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 def store(request):
@@ -8,15 +9,33 @@ def store(request):
     return render(request, 'store/store.html', context)
 
 def cart(request):
-    """
-    Render the cart page.
-    """
-    context = {}
+    if request.user.is_authenticated:
+        try:
+            customer = request.user.customer
+        except ObjectDoesNotExist:
+            customer = Customer.objects.create(user=request.user)
+
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+
+    context = {'items': items, 'order': order}
     return render(request, 'store/cart.html', context)
 
 def checkout(request):
-    """
-    Render the checkout page.
-    """
-    context = {}
-    return render(request, 'store/checkout.html', context)  
+    if request.user.is_authenticated:
+        try:
+            customer = request.user.customer
+        except ObjectDoesNotExist:
+            customer = Customer.objects.create(user=request.user)
+
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+
+    context = {'items': items, 'order': order}
+    return render(request, 'store/checkout.html', context)
